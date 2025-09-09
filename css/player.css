@@ -1,1 +1,805 @@
+/* 🎵 СТИЛИ МУЗЫКАЛЬНОГО ПЛЕЕРА */
 
+/* ================================
+   🎵 МИНИ-ПЛЕЕР (НИЖНЯЯ ПАНЕЛЬ)
+   ================================ */
+
+.mini-player {
+    position: fixed;
+    bottom: var(--bottom-nav-height);
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    z-index: var(--z-player);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    height: var(--mini-player-height);
+    box-shadow: var(--shadow-medium);
+}
+
+.mini-player.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+/* Анимация свайпа вниз на мобильных */
+.mini-player.swiping {
+    transition: none;
+}
+
+.mini-player.swipe-hint {
+    animation: swipeHint 2s ease-in-out;
+}
+
+@keyframes swipeHint {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+.mini-player-content {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    gap: 1rem;
+    height: calc(100% - 2px); /* Учитываем прогресс-бар */
+}
+
+.mini-player-cover {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-small);
+    background: var(--bg-tertiary);
+}
+
+.mini-player-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.mini-player-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.mini-player-artist {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.mini-player-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.mini-play-btn {
+    background: var(--primary);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.75rem;
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    box-shadow: var(--shadow-small);
+}
+
+.mini-play-btn:hover {
+    background: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+.mini-play-btn:active {
+    transform: scale(0.95);
+}
+
+.mini-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--bg-tertiary);
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.1s linear;
+    width: 0%;
+    position: relative;
+}
+
+/* Блик на прогресс-баре */
+.mini-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: progressGlow 2s ease-in-out infinite;
+}
+
+@keyframes progressGlow {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* ================================
+   🎵 ПОЛНОЭКРАННЫЙ ПЛЕЕР
+   ================================ */
+
+.full-player {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: var(--z-player);
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform var(--transition-slow);
+    backdrop-filter: blur(20px);
+}
+
+.full-player.active {
+    transform: translateY(0);
+}
+
+.full-player.closing {
+    animation: playerSlideDown 0.3s ease-in-out forwards;
+}
+
+@keyframes playerSlideDown {
+    to { transform: translateY(100%); }
+}
+
+/* Фон с размытием обложки */
+.full-player::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--bg-image, none);
+    background-size: cover;
+    background-position: center;
+    filter: blur(50px);
+    opacity: 0.1;
+    z-index: -1;
+}
+
+/* ================================
+   🎵 ЗАГОЛОВОК ПЛЕЕРА
+   ================================ */
+
+.full-player-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+}
+
+.player-header-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.75rem;
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+}
+
+.player-header-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.player-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+/* ================================
+   🎵 ОСНОВНОЙ КОНТЕНТ ПЛЕЕРА
+   ================================ */
+
+.full-player-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.player-artwork {
+    position: relative;
+    width: min(80vw, 320px);
+    height: min(80vw, 320px);
+    margin-bottom: 2rem;
+    border-radius: var(--border-radius-large);
+    overflow: hidden;
+    box-shadow: var(--shadow-large);
+    background: var(--bg-tertiary);
+}
+
+.player-artwork.playing {
+    animation: subtlePulse 4s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.player-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Анимированный оверлей */
+.artwork-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg, 
+        transparent 30%, 
+        rgba(255,255,255,0.1) 50%, 
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.player-artwork.playing .artwork-overlay {
+    opacity: 1;
+    animation: artworkShine 3s ease-in-out infinite;
+}
+
+@keyframes artworkShine {
+    0% { 
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+        opacity: 0;
+    }
+    50% { 
+        opacity: 1;
+    }
+    100% { 
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+        opacity: 0;
+    }
+}
+
+/* Виниловая анимация */
+.vinyl-animation {
+    position: absolute;
+    inset: 15%;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.vinyl-animation::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: var(--bg-primary);
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.player-artwork.playing .vinyl-animation {
+    opacity: 1;
+    animation: vinylSpin 3s linear infinite;
+}
+
+@keyframes vinylSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ================================
+   🎵 ИНФОРМАЦИЯ О ТРЕКЕ
+   ================================ */
+
+.player-track-info {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 2rem;
+}
+
+.player-track-title {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.player-track-artist {
+    color: var(--text-secondary);
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.track-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.75rem;
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+}
+
+.action-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.action-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.action-btn.liked {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: white;
+    animation: heartBeat 0.6s ease-in-out;
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.2); }
+    50% { transform: scale(1.1); }
+    75% { transform: scale(1.15); }
+}
+
+/* ================================
+   🎵 ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
+   ================================ */
+
+.full-player-controls {
+    padding: 2rem;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Прогресс секция */
+.progress-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.time-display {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    min-width: 45px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.progress-container {
+    flex: 1;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 1rem 0;
+}
+
+.progress-track {
+    position: relative;
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: 2px;
+    width: 100%;
+    overflow: visible;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 2px;
+    transition: width 0.1s linear;
+    width: 0%;
+    position: relative;
+}
+
+.progress-handle {
+    position: absolute;
+    top: 50%;
+    right: -8px;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background: var(--primary);
+    border: 2px solid white;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-small);
+    cursor: grab;
+}
+
+.progress-container:hover .progress-handle,
+.progress-container.dragging .progress-handle {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
+}
+
+.progress-container.dragging .progress-handle {
+    cursor: grabbing;
+    box-shadow: var(--shadow-medium);
+}
+
+/* Кнопки управления */
+.control-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1rem, 4vw, 2rem);
+    margin-bottom: 1.5rem;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 1rem;
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    position: relative;
+}
+
+.control-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.control-btn.primary {
+    background: var(--primary);
+    color: white;
+    width: 72px;
+    height: 72px;
+    box-shadow: var(--shadow-medium);
+}
+
+.control-btn.primary:hover {
+    background: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+.control-btn.active {
+    color: var(--primary);
+}
+
+.control-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+/* Секция громкости */
+.volume-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.volume-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.75rem;
+    border-radius: 50%;
+    transition: all var(--transition-normal);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.volume-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.volume-slider {
+    width: 120px;
+    position: relative;
+}
+
+.volume-slider input[type="range"] {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-tertiary);
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.volume-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--primary);
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-small);
+    transition: all var(--transition-normal);
+}
+
+.volume-slider input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.volume-slider input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--primary);
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-small);
+    transition: all var(--transition-normal);
+}
+
+/* ================================
+   📱 МОБИЛЬНАЯ АДАПТАЦИЯ
+   ================================ */
+
+@media (max-width: 768px) {
+    .full-player-content {
+        padding: 1rem;
+    }
+    
+    .player-artwork {
+        width: min(70vw, 280px);
+        height: min(70vw, 280px);
+    }
+    
+    .control-buttons {
+        gap: 1rem;
+    }
+    
+    .control-btn {
+        width: 48px;
+        height: 48px;
+        padding: 0.75rem;
+    }
+    
+    .control-btn.primary {
+        width: 64px;
+        height: 64px;
+    }
+    
+    .full-player-controls {
+        padding: 1.5rem 1rem;
+    }
+    
+    .volume-section {
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .mini-player-content {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+    
+    .mini-player-cover {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .mini-play-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0.5rem;
+    }
+    
+    .player-artwork {
+        width: min(65vw, 240px);
+        height: min(65vw, 240px);
+        margin-bottom: 1.5rem;
+    }
+    
+    .track-actions {
+        gap: 0.75rem;
+    }
+    
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0.5rem;
+    }
+    
+    .control-btn {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .control-btn.primary {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .volume-slider {
+        width: 100px;
+    }
+}
+
+/* ================================
+   🎨 ВИЗУАЛИЗАЦИЯ (ОПЦИОНАЛЬНО)
+   ================================ */
+
+.audio-visualizer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 1rem;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.visualizer-bar {
+    width: 3px;
+    background: var(--primary);
+    border-radius: 2px;
+    transition: height 0.1s ease;
+    min-height: 4px;
+    animation: audioWave 1.5s ease-in-out infinite;
+}
+
+.visualizer-bar:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.visualizer-bar:nth-child(even) {
+    animation-delay: 0.3s;
+}
+
+@keyframes audioWave {
+    0%, 100% { height: 8px; }
+    50% { height: 24px; }
+}
+
+/* ================================
+   🌟 ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ
+   ================================ */
+
+.player-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.player-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255,255,255,0.1), 
+        transparent
+    );
+    animation: playerLoading 1.5s infinite;
+}
+
+@keyframes playerLoading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Эффект пульсации для кнопки воспроизведения */
+.control-btn.primary.playing {
+    animation: playingPulse 2s ease-in-out infinite;
+}
+
+@keyframes playingPulse {
+    0%, 100% { 
+        box-shadow: var(--shadow-medium);
+    }
+    50% { 
+        box-shadow: 0 8px 32px rgba(0, 123, 255, 0.4);
+    }
+}
