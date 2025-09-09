@@ -451,4 +451,118 @@ class AudioPlayer {
         }
 
         // Диспатчим событие
-        window.dispatchEvent(
+        // Диспатчим событие
+        window.dispatchEvent(new CustomEvent(EVENTS.PLAYER_TIME_UPDATE, {
+            detail: { 
+                track: this.currentTrack, 
+                currentTime, 
+                duration, 
+                progress 
+            }
+        }));
+    }
+
+    onError(e) {
+        console.error('Audio playback error:', e);
+        window.UI.showToast('Ошибка воспроизведения трека', 'error');
+        
+        // Пробуем следующий трек
+        if (this.playlist.length > 1) {
+            this.nextTrack();
+        }
+    }
+
+    // === ОБНОВЛЕНИЕ UI ===
+
+    updateUI() {
+        if (!this.currentTrack) return;
+
+        const track = this.currentTrack;
+
+        // Мини плеер
+        const miniTitle = Utils.$('#miniPlayerTitle');
+        const miniArtist = Utils.$('#miniPlayerArtist');
+        const miniCover = Utils.$('#miniPlayerCover');
+
+        if (miniTitle) miniTitle.textContent = track.title;
+        if (miniArtist) miniArtist.textContent = track.artist;
+        if (miniCover) {
+            miniCover.src = track.coverUrl || '';
+            miniCover.alt = `${track.title} - ${track.artist}`;
+        }
+
+        // Полноэкранный плеер
+        const fullTitle = Utils.$('#fullPlayerTitle');
+        const fullArtist = Utils.$('#fullPlayerArtist');
+        const fullCover = Utils.$('#fullPlayerCover');
+
+        if (fullTitle) fullTitle.textContent = track.title;
+        if (fullArtist) fullArtist.textContent = track.artist;
+        if (fullCover) {
+            fullCover.src = track.coverUrl || '';
+            fullCover.alt = `${track.title} - ${track.artist}`;
+        }
+
+        // Обновляем фон плеера
+        this.updatePlayerBackground();
+        
+        // Обновляем активный трек в списках
+        this.updateActiveTrack();
+    }
+
+    updatePlayerBackground() {
+        if (!this.currentTrack?.coverUrl) return;
+
+        const fullPlayer = Utils.$('#fullPlayer');
+        if (fullPlayer) {
+            // Устанавливаем фон с размытием
+            fullPlayer.style.setProperty('--bg-image', `url(${this.currentTrack.coverUrl})`);
+        }
+    }
+
+    updateActiveTrack() {
+        // Убираем класс playing со всех треков
+        Utils.$('.track-item').forEach(item => {
+            item.classList.remove('playing');
+        });
+
+        // Добавляем класс playing к текущему треку
+        if (this.currentTrack) {
+            const activeTrack = Utils.$(`[data-track-id="${this.currentTrack.id}"]`);
+            if (activeTrack) {
+                activeTrack.classList.add('playing');
+            }
+        }
+    }
+
+    updatePlayButtons() {
+        const playBtns = Utils.$('#miniPlayBtn .icon, #mainPlayBtn .icon');
+        const icon = this.isPlaying ? '⏸️' : '▶️';
+        
+        playBtns.forEach(btn => {
+            btn.textContent = icon;
+        });
+
+        // Обновляем класс для анимаций
+        const mainPlayBtn = Utils.$('#mainPlayBtn');
+        if (mainPlayBtn) {
+            mainPlayBtn.classList.toggle('playing', this.isPlaying);
+        }
+    }
+
+    updateMediaSession() {
+        if (!('mediaSession' in navigator) || !this.currentTrack) return;
+
+        const track = this.currentTrack;
+        
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: track.title,
+            artist: track.artist,
+            artwork: track.coverUrl ? [
+                { src: track.coverUrl, sizes: '256x256', type: 'image/jpeg' },
+                { src: track.coverUrl, sizes: '512x512', type: 'image/jpeg' }
+            ] : []
+        });
+    }
+}
+            
