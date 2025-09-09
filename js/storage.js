@@ -4,7 +4,7 @@
 
 class StorageManager {
     constructor() {
-        this.baseURL = https://dansqwoz.github.io/MYMusuc/; // Для продакшена будет URL вашего сервера на Render
+        this.baseURL = 'https://dansqwoz.github.io/MYMusuc/'; // Для продакшена будет URL вашего сервера на Render
         this.token = localStorage.getItem('soundwave_token');
     }
 
