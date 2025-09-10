@@ -355,8 +355,8 @@ function $(selector) {
     return document.querySelector(selector);
 }
 
-function $(selector) {
-    return document.querySelectorAll(selector);
+function $$(selector) {
+    return Array.from(document.querySelectorAll(selector));
 }
 
 // Добавление/удаление классов с проверкой
