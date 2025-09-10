@@ -18,12 +18,15 @@ class AudioPlayer {
     }
 
     createAudioElement() {
-        const audio = document.createElement('audio');
+    let audio = document.getElementById('audioPlayer');
+    if (!audio) {
+        audio = document.createElement('audio');
         audio.id = 'audioPlayer';
-        audio.preload = CONFIG.AUDIO.PRELOAD;
+        audio.preload = CONFIG.AUDIO.PRELOAD || 'metadata';
         document.body.appendChild(audio);
-        return audio;
     }
+    return audio;
+}
 
     init() {
         this.setupEventListeners();
