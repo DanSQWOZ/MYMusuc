@@ -788,370 +788,99 @@ class UIManager {
         if (!window.Player) return;
 
         try {
+            await window.Player.loadTraasync playTrack(track, playlist = null, index = 0) {
+        if (!window.Player) return;
+
+        try {
             await window.Player.loadTrack(track, playlist, index);
-            this.showMiniPlayer();
-            
-            // Обновляем UI для показа играющего трека
-            this.updatePlayingTrackUI(track);
-            
+            window.Player.play();
         } catch (error) {
             console.error('Error playing track:', error);
             this.showToast('Ошибка воспроизведения', 'error');
         }
     }
 
-    updatePlayingTrackUI(track) {
-        // Убираем выделение с предыдущего трека
-        Utils.$('.track-item.playing').forEach(item => {
-            item.classList.remove('playing');
-        });
-
-        // Выделяем текущий трек
-        const currentTrackItem = Utils.$(`[data-track-id="${track.id}"]`);
-        if (currentTrackItem) {
-            currentTrackItem.classList.add('playing');
-        }
-    }
-
-    async toggleLike(track, button) {
-        if (!window.Auth?.isLoggedIn()) {
-            this.showToast('Войдите, чтобы добавлять треки в медиатеку', 'warning');
-            return;
-        }
-
-        try {
-            const isLiked = await window.Storage.toggleLike(track.id);
+    toggleLike(track, button) {
+        // Пока что только визуальная обратная связь
+        if (button) {
+            button.classList.toggle('liked');
             
-            // Обновляем UI кнопки
-            button.classList.toggle('liked', isLiked);
-            
-            // Показываем уведомление
-            if (isLiked) {
-                this.showToast('Трек добавлен в медиатеку', 'success');
+            const icon = button.querySelector('.icon');
+            if (button.classList.contains('liked')) {
+                icon.textContent = '❤️';
+                this.showToast('Добавлено в избранное', 'success');
             } else {
-                this.showToast('Трек удален из медиатеки', 'info');
+                icon.textContent = '🤍';
+                this.showToast('Удалено из избранного', 'info');
             }
-
-            // Обновляем счетчик лайков в треке
-            const likesSpan = button.closest('.track-item').querySelector('.track-likes');
-            if (likesSpan) {
-                const currentLikes = parseInt(likesSpan.textContent.replace(/\D/g, '')) || 0;
-                likesSpan.textContent = `❤️ ${currentLikes + (isLiked ? 1 : -1)}`;
-            }
-
-        } catch (error) {
-            console.error('Error toggling like:', error);
-            this.showToast('Ошибка при добавлении в медиатеку', 'error');
         }
     }
 
     showTrackContextMenu(event, track) {
-        const x = event.clientX;
-        const y = event.clientY;
-
-        const isLoggedIn = window.Auth?.isLoggedIn();
-        const isOwnTrack = isLoggedIn && window.Auth.getUser().id === track.uploaderId;
-
-        const menuItems = [
+        const items = [
             {
-                icon: '▶️',
-                label: 'Воспроизвести',
-                onClick: () => this.playTrack(track)
-            },
-            {
-                icon: '⏭️',
                 label: 'Играть следующим',
-                onClick: () => window.Player?.addToQueue(track, 'next')
+                icon: '⏭️',
+                onClick: () => {
+                    this.showToast('Добавлено в очередь', 'success');
+                }
             },
             {
-                icon: '📋',
-                label: 'Добавить в очередь',
-                onClick: () => window.Player?.addToQueue(track, 'end')
+                label: 'Добавить в медиатеку',
+                icon: '❤️',
+                onClick: () => this.toggleLike(track, null)
+            },
+            {
+                label: 'Поделиться',
+                icon: '📤',
+                onClick: () => this.shareTrack(track)
+            },
+            { type: 'divider' },
+            {
+                label: 'Перейти к автору',
+                icon: '👤',
+                onClick: () => {
+                    if (track.uploader) {
+                        this.showToast(`Переход к ${track.uploader.username}`, 'info');
+                    }
+                }
             }
         ];
 
-        if (isLoggedIn) {
-            menuItems.push(
-                { type: 'divider' },
-                {
-                    icon: '❤️',
-                    label: 'Добавить в медиатеку',
-                    onClick: () => this.toggleLike(track, event.target)
-                },
-                {
-                    icon: '➕',
-                    label: 'Добавить в плейлист',
-                    onClick: () => this.showAddToPlaylistModal(track)
-                }
-            );
-        }
-
-        menuItems.push(
-            { type: 'divider' },
-            {
-                icon: '📤',
-                label: 'Поделиться',
-                onClick: () => this.shareTrack(track)
-            },
-            {
-                icon: '👤',
-                label: 'Перейти к автору',
-                onClick: () => this.goToUser(track.uploaderId)
-            }
-        );
-
-        // Если это свой трек, добавляем опции редактирования
-        if (isOwnTrack) {
-            menuItems.push(
-                { type: 'divider' },
-                {
-                    icon: '✏️',
-                    label: 'Редактировать',
-                    onClick: () => this.editTrack(track)
-                },
-                {
-                    icon: '🗑️',
-                    label: 'Удалить',
-                    dangerous: true,
-                    onClick: () => this.deleteTrack(track)
-                }
-            );
-        }
-
-        this.showContextMenu(x, y, menuItems);
+        this.showContextMenu(event.clientX, event.clientY, items);
     }
 
-    async shareTrack(track) {
-        const shareUrl = `${window.location.origin}?track=${track.id}`;
-        
+    shareTrack(track) {
         if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: track.title,
-                    text: `Послушайте "${track.title}" от ${track.artist}`,
-                    url: shareUrl
-                });
-            } catch (error) {
-                // Пользователь отменил шаринг
-            }
+            navigator.share({
+                title: track.title,
+                text: `Слушаю "${track.title}" от ${track.artist} на SoundWave`,
+                url: window.location.origin
+            }).catch(() => {
+                this.copyToClipboard(`${track.title} - ${track.artist}`);
+            });
         } else {
-            // Fallback - копируем в буфер обмена
-            try {
-                await navigator.clipboard.writeText(shareUrl);
-                this.showToast('Ссылка скопирована в буфер обмена', 'success');
-            } catch (error) {
-                this.showToast('Не удалось скопировать ссылку', 'error');
-            }
+            this.copyToClipboard(`${track.title} - ${track.artist}`);
         }
     }
 
-    goToUser(userId) {
-        // Переходим к профилю пользователя
-        this.switchTab('profile');
-        // TODO: загрузить профиль конкретного пользователя
-    }
-
-    async editTrack(track) {
-        // TODO: показать модальное окно редактирования трека
-        this.showToast('Редактирование треков будет добавлено в следующем обновлении', 'info');
-    }
-
-    async deleteTrack(track) {
-        const confirmed = confirm(`Вы уверены, что хотите удалить трек "${track.title}"?`);
-        if (!confirmed) return;
-
-        try {
-            await window.Storage.deleteTrack(track.id);
-            this.showToast('Трек удален', 'success');
-            
-            // Удаляем элемент из DOM
-            const trackElement = Utils.$(`[data-track-id="${track.id}"]`);
-            if (trackElement) {
-                trackElement.remove();
-            }
-            
-            // Если удаленный трек сейчас играет, останавливаем
-            if (window.Player?.getCurrentTrack()?.id === track.id) {
-                window.Player.stop();
-                this.hideMiniPlayer();
-            }
-            
-        } catch (error) {
-            console.error('Error deleting track:', error);
-            this.showToast('Ошибка при удалении трека', 'error');
-        }
-    }
-
-    showAddToPlaylistModal(track) {
-        // TODO: показать модальное окно выбора плейлиста
-        this.showToast('Плейлисты будут добавлены в следующем обновлении', 'info');
-    }
-
-    // === СЕНСОРНЫЕ ЖЕСТЫ ===
-
-    setupTouch() {
-        if (!Utils.isTouchDevice()) return;
-
-        // Поддержка жестов для мини-плеера
-        this.setupMiniPlayerGestures();
-    }
-
-    setupMiniPlayerGestures() {
-        const miniPlayer = Utils.$('#miniPlayer');
-        if (!miniPlayer) return;
-
-        let startX = 0;
-        let startY = 0;
-        let currentX = 0;
-        let isDragging = false;
-
-        const onTouchStart = (e) => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            isDragging = true;
-        };
-
-        const onTouchMove = (e) => {
-            if (!isDragging) return;
-            
-            currentX = e.touches[0].clientX;
-            const deltaX = currentX - startX;
-            const deltaY = e.touches[0].clientY - startY;
-            
-            // Если движение больше по вертикали, игнорируем
-            if (Math.abs(deltaY) > Math.abs(deltaX)) return;
-            
-            // Свайп для смены трека
-            if (Math.abs(deltaX) > 50) {
-                e.preventDefault();
-                
-                if (deltaX > 0) {
-                    // Свайп вправо - предыдущий трек
-                    window.Player?.previousTrack();
-                } else {
-                    // Свайп влево - следующий трек
-                    window.Player?.nextTrack();
-                }
-                
-                isDragging = false;
-            }
-        };
-
-        const onTouchEnd = () => {
-            isDragging = false;
-        };
-
-        miniPlayer.addEventListener('touchstart', onTouchStart);
-        miniPlayer.addEventListener('touchmove', onTouchMove);
-        miniPlayer.addEventListener('touchend', onTouchEnd);
-
-        // Tap для открытия полноэкранного плеера
-        let tapCount = 0;
-        miniPlayer.addEventListener('click', (e) => {
-            // Игнорируем клики по кнопкам
-            if (e.target.closest('button')) return;
-            
-            tapCount++;
-            setTimeout(() => {
-                if (tapCount === 1) {
-                    this.showFullPlayer();
-                }
-                tapCount = 0;
-            }, 300);
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            this.showToast('Скопировано в буфер обмена', 'success');
+        }).catch(() => {
+            this.showToast('Не удалось скопировать', 'error');
         });
     }
 
-    // === ОБНОВЛЕНИЕ UI ПЛЕЕРА ===
-
-    updateMiniPlayer(track) {
-        if (!track) {
-            this.hideMiniPlayer();
-            return;
-        }
-
-        const miniPlayerCover = Utils.$('#miniPlayerCover');
-        const miniPlayerTitle = Utils.$('#miniPlayerTitle');
-        const miniPlayerArtist = Utils.$('#miniPlayerArtist');
-        const miniPlayBtn = Utils.$('#miniPlayBtn');
-
-        if (miniPlayerCover) {
-            miniPlayerCover.src = track.coverUrl || '/assets/default-cover.svg';
-            miniPlayerCover.alt = track.title;
-        }
-
-        if (miniPlayerTitle) miniPlayerTitle.textContent = track.title;
-        if (miniPlayerArtist) miniPlayerArtist.textContent = track.artist;
-
-        // Обновляем кнопку воспроизведения
-        if (miniPlayBtn && window.Player) {
-            const icon = window.Player.isPlaying() ? '⏸️' : '▶️';
-            miniPlayBtn.querySelector('.icon').textContent = icon;
-        }
-
-        this.showMiniPlayer();
-    }
-
-    updateFullPlayer(track) {
-        if (!track) return;
-
-        const fullPlayerCover = Utils.$('#fullPlayerCover');
-        const fullPlayerTitle = Utils.$('#fullPlayerTitle');
-        const fullPlayerArtist = Utils.$('#fullPlayerArtist');
-        const mainPlayBtn = Utils.$('#mainPlayBtn');
-
-        if (fullPlayerCover) {
-            fullPlayerCover.src = track.coverUrl || '/assets/default-cover.svg';
-            fullPlayerCover.alt = track.title;
-        }
-
-        if (fullPlayerTitle) fullPlayerTitle.textContent = track.title;
-        if (fullPlayerArtist) fullPlayerArtist.textContent = track.artist;
-
-        // Обновляем кнопку воспроизведения
-        if (mainPlayBtn && window.Player) {
-            const icon = window.Player.isPlaying() ? '⏸️' : '▶️';
-            mainPlayBtn.querySelector('.icon').textContent = icon;
-        }
-    }
-
-    updateProgress(currentTime, duration) {
-        // Обновляем прогресс в мини-плеере
-        const miniProgressFill = Utils.$('#miniProgressFill');
-        if (miniProgressFill && duration > 0) {
-            const progress = (currentTime / duration) * 100;
-            miniProgressFill.style.width = `${progress}%`;
-        }
-
-        // Обновляем прогресс в полноэкранном плеере
-        const progressFill = Utils.$('#progressFill');
-        const progressHandle = Utils.$('#progressHandle');
-        
-        if (progressFill && duration > 0) {
-            const progress = (currentTime / duration) * 100;
-            progressFill.style.width = `${progress}%`;
-            
-            if (progressHandle) {
-                progressHandle.style.left = `${progress}%`;
-            }
-        }
-
-        // Обновляем время
-        const currentTimeEl = Utils.$('#currentTime');
-        const totalTimeEl = Utils.$('#totalTime');
-        
-        if (currentTimeEl) currentTimeEl.textContent = Utils.formatTime(currentTime);
-        if (totalTimeEl) totalTimeEl.textContent = Utils.formatTime(duration);
-    }
-
-    // === УТИЛИТЫ ===
-
     setupTouch() {
         if (!Utils.isTouchDevice()) return;
-        
-        this.setupMiniPlayerGestures();
-        this.setupPlayerSwipe();
+
+        if (CONFIG.MOBILE.ENABLE_HAPTIC && 'vibrate' in navigator) {
+            Utils.$$('button, .track-item, .nav-item').forEach(element => {
+                element.addEventListener('touchstart', () => {
+                    navigator.vibrate(50);
+                });
+            });
+        }
     }
 }
-
-// Экспортируем класс
-window.UIManager = UIManager;
