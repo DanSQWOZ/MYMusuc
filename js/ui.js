@@ -783,12 +783,8 @@ class UIManager {
             this.showTrackContextMenu(e, track);
         });
     }
-
+    
     async playTrack(track, playlist = null, index = 0) {
-        if (!window.Player) return;
-
-        try {
-            await window.Player.loadTraasync playTrack(track, playlist = null, index = 0) {
         if (!window.Player) return;
 
         try {
