@@ -730,9 +730,7 @@ window.MOODS = window.MOODS || [];
 window.DEFAULT_GRADIENTS = window.DEFAULT_GRADIENTS || [];
 
 // Обработчик для hot reload в разработке
-if (module && module.hot) {
-    module.hot.accept();
-}
+
 
 // Показываем информацию о загрузке
 console.log('%c🎵 SoundWave', 'font-size: 24px; color: #007bff; font-weight: bold;');
